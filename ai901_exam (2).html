@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI-901 · Azure AI Fundamentals</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #080d18;
+            --bg-grid: #101c33;
+            --surface: #10182a;
+            --surface-2: #141f38;
+            --border: #1f2c49;
+            --border-soft: #182238;
+            --text: #e9edf7;
+            --text-dim: #8a97b8;
+            --text-faint: #5a6787;
+            --azure: #38bdf8;
+            --azure-deep: #0ea5e9;
+            --azure-glow: rgba(56, 189, 248, 0.35);
+            --amber: #fbbf24;
+            --success: #34d399;
+            --success-bg: rgba(52, 211, 153, 0.1);
+            --danger: #fb7185;
+            --danger-bg: rgba(251, 113, 133, 0.1);
+            --radius: 14px;
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: var(--font-body);
+            background:
+                radial-gradient(circle at 1px 1px, var(--bg-grid) 1px, transparent 1px) 0 0/28px 28px,
+                radial-gradient(ellipse 900px 500px at 15% -10%, rgba(56,189,248,0.10), transparent 60%),
+                radial-gradient(ellipse 700px 500px at 100% 10%, rgba(56,189,248,0.06), transparent 55%),
+                var(--bg);
+            color: var(--text);
+            padding: 32px 20px 60px;
+            min-height: 100vh;
+        }
+        .container { max-width: 980px; margin: 0 auto; }
+
+        /* ---------------- Header ---------------- */
+        .masthead {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 20px;
+            flex-wrap: wrap;
+            padding-bottom: 22px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 22px;
+        }
+        .masthead-left .eyebrow {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            letter-spacing: 0.14em;
+            color: var(--azure);
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .eyebrow::before {
+            content: '';
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--azure);
+            box-shadow: 0 0 10px var(--azure-glow), 0 0 0 3px rgba(56,189,248,0.12);
+        }
+        h1 {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 32px;
+            letter-spacing: -0.01em;
+            line-height: 1.1;
+        }
+        h1 span.sub {
+            display: block;
+            font-family: var(--font-body);
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--text-dim);
+            margin-top: 6px;
+        }
+
+        /* Readiness gauge — signature element */
+        .gauge-wrap {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-family: var(--font-mono);
+        }
+        .gauge {
+            width: 76px; height: 76px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            background: conic-gradient(var(--azure) 0deg, var(--border-soft) 0deg);
+            position: relative;
+            transition: background 0.6s ease;
+        }
+        .gauge::before {
+            content: '';
+            position: absolute;
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            background: var(--bg);
+        }
+        .gauge-value {
+            position: relative;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            z-index: 1;
+        }
+        .gauge-label {
+            font-size: 11px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            line-height: 1.6;
+        }
+        .gauge-label b { color: var(--text); font-size: 13px; display: block; }
+
+        /* ---------------- Console bar ---------------- */
+        .console {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            margin-bottom: 20px;
+        }
+        .stats {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            font-family: var(--font-mono);
+        }
+        .stats span {
+            background: var(--surface-2);
+            border: 1px solid var(--border-soft);
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .stats .num { color: var(--azure); font-weight: 700; font-size: 14px; }
+        .stats .num.ok { color: var(--success); }
+        .stats .num.bad { color: var(--danger); }
+
+        .btn {
+            font-family: var(--font-body);
+            background: var(--azure-deep);
+            color: #051019;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 9px;
+            font-weight: 700;
+            font-size: 13.5px;
+            cursor: pointer;
+            transition: transform 0.12s ease, box-shadow 0.2s ease, background 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            letter-spacing: 0.01em;
+        }
+        .btn:hover { background: var(--azure); box-shadow: 0 0 0 4px rgba(56,189,248,0.15); }
+        .btn:active { transform: scale(0.96); }
+        .btn-secondary { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: #182642; box-shadow: none; border-color: #2a3a5e; }
+        .btn-success { background: var(--success); color: #052017; }
+        .btn-success:hover { background: #4ade80; box-shadow: 0 0 0 4px rgba(52,211,153,0.15); }
+
+        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        /* ---------------- Result summary ---------------- */
+        .result-summary {
+            background: linear-gradient(135deg, rgba(56,189,248,0.08), rgba(56,189,248,0.02));
+            border: 1px solid rgba(56,189,248,0.3);
+            border-radius: var(--radius);
+            padding: 22px 26px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            align-items: center;
+        }
+        .result-summary .score {
+            font-family: var(--font-display);
+            font-size: 40px;
+            font-weight: 700;
+            color: var(--azure);
+            text-shadow: 0 0 24px var(--azure-glow);
+        }
+        .result-summary .detail {
+            font-size: 14px;
+            color: var(--text-dim);
+            font-family: var(--font-mono);
+        }
+        .result-summary .detail span { font-weight: 700; color: var(--text); }
+        .result-summary .actions { margin-left: auto; display: flex; gap: 10px; }
+
+        /* ---------------- Mode bar ---------------- */
+        .mode-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+        .mode-bar .btn {
+            background: transparent;
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            padding: 8px 18px;
+            font-size: 12.5px;
+            font-family: var(--font-mono);
+            border-radius: 30px;
+            font-weight: 600;
+        }
+        .mode-bar .btn:hover { color: var(--text); border-color: #33456c; box-shadow: none; }
+        .mode-bar .btn.active {
+            background: rgba(56,189,248,0.14);
+            color: var(--azure);
+            border-color: rgba(56,189,248,0.55);
+        }
+
+        /* ---------------- Filter bar ---------------- */
+        .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+        .filter-bar .btn {
+            background: transparent;
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            padding: 7px 16px;
+            font-size: 12.5px;
+            font-family: var(--font-mono);
+            border-radius: 30px;
+            font-weight: 500;
+        }
+        .filter-bar .btn:hover { color: var(--text); border-color: #33456c; box-shadow: none; }
+        .filter-bar .btn.active {
+            background: rgba(56,189,248,0.12);
+            color: var(--azure);
+            border-color: rgba(56,189,248,0.5);
+        }
+
+        /* ---------------- Question card ---------------- */
+        .question-card {
+            display: flex;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 14px;
+            overflow: hidden;
+            transition: border-color 0.2s ease;
+        }
+        .question-card:hover { border-color: #2a3a5e; }
+        .question-card.correct { border-color: rgba(52,211,153,0.45); }
+        .question-card.wrong { border-color: rgba(251,113,133,0.45); }
+
+        .qnum-col {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--azure);
+            background: var(--surface-2);
+            width: 62px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 22px;
+            border-right: 1px dashed var(--border);
+            position: relative;
+        }
+        .question-card.correct .qnum-col { color: var(--success); }
+        .question-card.wrong .qnum-col { color: var(--danger); }
+
+        .qbody { padding: 22px 24px; flex: 1; min-width: 0; }
+
+        .question-text {
+            font-size: 16.5px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            line-height: 1.55;
+            color: var(--text);
+        }
+        .options { display: flex; flex-direction: column; gap: 8px; }
+        .options label {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 9px;
+            cursor: pointer;
+            transition: background 0.15s ease, border-color 0.15s ease;
+            font-size: 14.5px;
+            color: var(--text-dim);
+            border: 1px solid var(--border-soft);
+            background: var(--surface-2);
+        }
+        .options label:hover { background: #182642; border-color: #2a3a5e; color: var(--text); }
+        .options input[type="radio"],
+        .options input[type="checkbox"] {
+            margin-top: 3px;
+            accent-color: var(--azure);
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+        .options label.correct-answer { background: var(--success-bg); border-color: rgba(52,211,153,0.5); color: var(--text); }
+        .options label.wrong-answer { background: var(--danger-bg); border-color: rgba(251,113,133,0.5); color: var(--text); }
+
+        .explanation {
+            margin-top: 16px;
+            padding: 14px 18px;
+            background: var(--surface-2);
+            border-radius: 10px;
+            font-size: 13.5px;
+            border-left: 3px solid var(--azure);
+            line-height: 1.65;
+            color: var(--text-dim);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 3px 12px;
+            border-radius: 30px;
+            font-size: 11.5px;
+            font-weight: 700;
+            font-family: var(--font-mono);
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+        .badge-correct { background: var(--success-bg); color: var(--success); }
+        .badge-wrong { background: var(--danger-bg); color: var(--danger); }
+        .badge-unanswered { background: var(--surface-2); color: var(--text-faint); border: 1px solid var(--border); }
+
+        .correct-answer-text {
+            color: var(--success);
+            font-weight: 600;
+            margin-top: 10px;
+            padding: 9px 14px;
+            background: var(--success-bg);
+            border-radius: 8px;
+            font-size: 13.5px;
+        }
+
+        /* ---------------- Footer ---------------- */
+        .footer {
+            margin-top: 26px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            border-top: 1px solid var(--border);
+            padding-top: 22px;
+        }
+        .progress-text { font-family: var(--font-mono); font-size: 13px; color: var(--text-dim); }
+
+        @media (max-width: 700px) {
+            body { padding: 18px 12px 40px; }
+            h1 { font-size: 24px; }
+            .masthead { align-items: flex-start; }
+            .console { flex-direction: column; align-items: stretch; }
+            .qnum-col { width: 46px; font-size: 13px; padding-top: 18px; }
+            .qbody { padding: 18px 16px; }
+            .result-summary { flex-direction: column; text-align: center; }
+            .result-summary .actions { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="app">
+
+    <div class="masthead">
+        <div class="masthead-left">
+            <div class="eyebrow">Practice Console</div>
+            <h1>AI-901 Azure AI Fundamentals
+                <span class="sub" id="modeSub">95-question self-paced exam · answers shuffle per attempt</span>
+            </h1>
+        </div>
+        <div class="gauge-wrap">
+            <div class="gauge-label">Readiness<br><b id="scoreDisplay">0%</b></div>
+            <div class="gauge" id="gauge"><span class="gauge-value" id="gaugeValue">0%</span></div>
+        </div>
+    </div>
+
+    <div class="mode-bar">
+        <button class="btn mode-btn active" data-mode="full">Full Exam (95)</button>
+        <button class="btn mode-btn" data-mode="25">Random 25</button>
+        <button class="btn mode-btn" data-mode="10">Random 10</button>
+    </div>
+
+    <div class="console">
+        <div class="stats">
+            <span>Answered <span class="num" id="answeredCount">0</span>/<span id="totalQ">95</span></span>
+            <span>Correct <span class="num ok" id="correctCount">0</span></span>
+            <span>Wrong <span class="num bad" id="wrongCount">0</span></span>
+        </div>
+        <div class="btn-row">
+            <button class="btn btn-success" id="submitBtn">Submit &amp; Grade</button>
+            <button class="btn btn-secondary" id="reshuffleBtn">Reshuffle Options</button>
+            <button class="btn btn-secondary" id="resetBtn">Reset All</button>
+        </div>
+    </div>
+
+    <div id="resultSummary" class="result-summary" style="display:none;">
+        <div class="score" id="finalScore">0%</div>
+        <div class="detail">
+            <span id="finalCorrect">0</span> correct · <span id="finalWrong">0</span> wrong ·
+            <span id="finalUnanswered">0</span> unanswered
+        </div>
+        <div class="actions">
+            <button class="btn btn-secondary" id="showAllExplanationsBtn">Show All Explanations</button>
+            <button class="btn btn-secondary" id="hideAllExplanationsBtn" style="display:none;">Hide All Explanations</button>
+        </div>
+    </div>
+
+    <div class="filter-bar">
+        <button class="btn active" data-filter="all">All</button>
+        <button class="btn" data-filter="unanswered">Unanswered</button>
+        <button class="btn" data-filter="correct">Correct</button>
+        <button class="btn" data-filter="wrong">Wrong</button>
+    </div>
+
+    <div id="questionsContainer"></div>
+
+    <div class="footer">
+        <span class="progress-text" id="progressText">0 of 95 answered</span>
+        <div class="btn-row">
+            <button class="btn btn-success" id="submitBtn2">Submit &amp; Grade</button>
+            <button class="btn btn-secondary" id="resetBtn2">Reset</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ============================================================
+    //  EXAM DATA — ALL 95 QUESTIONS (in order 1-95)
+    // ============================================================
+    const EXAM_DATA = [
+        { id: 1, type: 'single', question: 'Which action can be performed by using the Azure AI Vision service?', options: ['creating thumbnails for training videos', 'extracting data from handwritten letters', 'extracting key phrases from documents', 'identifying breeds of animals in live video streams'], answer: 1, explanation: 'Azure AI Vision includes OCR capabilities, allowing you to extract text (both printed and handwritten) from images, PDFs, and scanned documents.' },
+        { id: 2, type: 'single', question: 'In the new Microsoft Foundry portal, you must fine-tune a model before you can deploy the model.', options: ['Yes', 'No'], answer: 1, explanation: 'Fine-tuning is not required before deployment. You can deploy a model directly from the model catalog without fine-tuning.' },
+        { id: 3, type: 'single', question: 'In the new Microsoft Foundry portal, you can test a model from the model catalog only after you deploy the model.', options: ['Yes', 'No'], answer: 1, explanation: 'You can test models in the playground without deploying them first.' },
+        { id: 4, type: 'single', question: 'In the new Microsoft Foundry portal, you can deploy a model from the model catalog only after retraining the model.', options: ['Yes', 'No'], answer: 1, explanation: 'Retraining is not required. Models can be deployed directly from the catalog.' },
+        { id: 5, type: 'single', question: 'You are building a Conversational Language Understanding model for an e-commerce business. You need to ensure that the model detects when utterances are outside the intended scope of the model. What should you do?', options: ['Export the model', 'Create a new model', 'Add utterances to the None intent', 'Create a prebuilt task entity'], answer: 2, explanation: 'The None intent is used to categorize utterances that don\'t belong to any other custom intents. Adding utterances to the None intent helps the model detect out-of-scope inputs.' },
+        { id: 6, type: 'single', question: 'You are developing an application that analyzes voicemail recordings by using Azure Content Understanding in Foundry Tools. You need to extract a transcript and structured information from the recordings. Which type of analyzer should you use?', options: ['document analyzer', 'video analyzer', 'audio analyzer', 'image analyzer'], answer: 2, explanation: 'An audio analyzer is designed to handle speech-to-text transcription, speaker labeling, and extracting structured fields from conversational audio content like voicemails.' },
+        { id: 7, type: 'single', question: 'Capturing text from images is an example of which type of AI capability?', options: ['text analysis', 'optical character recognition (OCR)', 'image description', 'object detection'], answer: 1, explanation: 'Optical Character Recognition (OCR) converts images of text into machine-readable, editable text.' },
+        { id: 8, type: 'single', question: 'What are two purposes of instructions when prompting a generative AI model? (Select two)', options: ['defines the agent\'s role and behavior', 'selects which model to use', 'defines the Azure region where inference occurs', 'defines the tokens per minute (TPM) allocation for the model', 'defines constraints on the model\'s responses'], answer: [0, 4], explanation: 'Instructions define the agent\'s role/behavior and place constraints on responses. They do not select models, regions, or TPM allocation.' },
+        { id: 9, type: 'single', question: 'You have a Microsoft Foundry project that contains an agent named Agent1. You need to ensure that Agent1 always calls an Azure function when the agent responds to user input. To what should you set tool_choice for Agent1?', options: ['required', 'auto', 'none'], answer: 0, explanation: 'Setting tool_choice="required" forces the model to pick a tool (Azure function) every time.' },
+        { id: 10, type: 'single', question: 'Human-in-the-loop practices provide accountability for AI-generated decisions.', options: ['Yes', 'No'], answer: 0, explanation: 'Human-in-the-loop ensures accountability by having humans oversee and take responsibility for AI-generated decisions.' },
+        { id: 11, type: 'single', question: 'Deploying an AI system to a production environment eliminates the need for ongoing monitoring.', options: ['Yes', 'No'], answer: 1, explanation: 'Ongoing monitoring is always required even after deployment to ensure performance, fairness, and safety.' },
+        { id: 12, type: 'single', question: 'Disclosing the team that designed and deployed an AI system provides accountability for the system\'s output.', options: ['Yes', 'No'], answer: 0, explanation: 'Transparency about who built the system is part of accountability.' },
+        { id: 13, type: 'single', question: 'Fairness can be achieved by focusing solely on improving the overall accuracy of an AI model.', options: ['Yes', 'No'], answer: 1, explanation: 'Fairness is not achieved by accuracy alone. Bias must be actively evaluated and mitigated across demographic groups.' },
+        { id: 14, type: 'single', question: 'Evaluating AI system outputs to identify and reduce bias across demographic groups supports fairness.', options: ['Yes', 'No'], answer: 0, explanation: 'This is a key practice for ensuring fairness in AI systems.' },
+        { id: 15, type: 'single', question: 'Ensuring fairness for an AI system means that all users always receive the same output from the system.', options: ['Yes', 'No'], answer: 1, explanation: 'Fairness does not mean identical outputs for all users; it means equitable treatment without discrimination.' },
+        { id: 16, type: 'single', question: 'You are authoring a Conversational Language Understanding application to support a music festival. You want users to be able to ask questions about scheduled shows. The question "Which act is playing on the main stage?" is an example of which type of element?', options: ['an intent', 'an utterance', 'a domain', 'an entity'], answer: 1, explanation: 'An utterance is the spoken or typed input from a user. This question is a natural language phrase used to train the model.' },
+        { id: 17, type: 'single', question: 'You are creating an app to help employees write emails and reports based on user prompts. What should you use?', options: ['Azure AI Vision', 'Azure Machine Learning studio', 'Azure OpenAI Service', 'Azure AI Speech'], answer: 2, explanation: 'Azure OpenAI Service with GPT models can generate human-like text based on user prompts.' },
+        { id: 18, type: 'single', question: 'You are developing an application that converts text into spoken audio and saves the synthesized audio to a file by using Azure Speech. Which audio configuration should you use?', options: ['AudioOutputConfig(filename="output.wav")', 'AudioOutputConfig(stream)', 'AudioStreamFormat(wave_stream_format=AudioStreamWaveFormat.PCM)'], answer: 0, explanation: 'To save synthesized audio to a file, use AudioOutputConfig with a filename parameter.' },
+        { id: 19, type: 'single', question: 'Ensuring that human reviewers oversee AI-generated decisions and remain responsible for the final output is an example of the Microsoft responsible AI principle of:', options: ['accountability', 'fairness', 'privacy and security', 'transparency'], answer: 0, explanation: 'Accountability means humans are responsible for AI system outputs and decisions.' },
+        { id: 20, type: 'single', question: 'What should you use to identify similar faces in a set of images?', options: ['Azure OpenAI in Foundry Models', 'Azure AI Custom Vision', 'Azure AI Language', 'Azure AI Vision'], answer: 3, explanation: 'Azure AI Vision (Face service) provides face detection, recognition, and similarity grouping capabilities.' },
+        { id: 21, type: 'single', question: 'You need to identify harmful content in a generative AI solution that uses Azure OpenAI Service. What should you use?', options: ['Face', 'Video Analysis', 'Language', 'Content Safety'], answer: 3, explanation: 'Azure AI Content Safety detects harmful user-generated and AI-generated content across text and images.' },
+        { id: 22, type: 'single', question: 'What can be used to analyze scanned invoices and extract data, such as billing addresses and the total amount due?', options: ['Azure AI Custom Vision', 'Azure AI Search', 'Azure OpenAI', 'Azure AI Document Intelligence'], answer: 3, explanation: 'Azure AI Document Intelligence has prebuilt invoice models that extract key fields like billing addresses and totals.' },
+        { id: 23, type: 'single', question: 'A _____ defines which fields to extract when analyzing content by using Azure Content Understanding in Foundry Tools.', options: ['keyword list', 'OCR-only processing', 'schema', 'synchronous API call'], answer: 2, explanation: 'A schema defines the structured fields to extract from content when using Azure Content Understanding.' },
+        { id: 24, type: 'single', question: 'In Azure Machine Learning, what are two ensemble methods for combining models in automated ML? (Select two)', options: ['voting', 'computer vision', 'stacking', 'classification', 'regression'], answer: [0, 2], explanation: 'Voting and Stacking are ensemble methods used in Azure AutoML to combine multiple models.' },
+        { id: 25, type: 'single', question: 'Verifying that machine learning models do NOT show racial or gender bias is an example of which Microsoft responsible AI principle?', options: ['fairness', 'privacy and security', 'safety', 'reliability'], answer: 0, explanation: 'Fairness ensures AI systems do not discriminate based on characteristics like race or gender.' },
+        { id: 26, type: 'single', question: 'You need to build an AI solution that generates marketing email drafts based on a short description of a product and its target audience. Which AI workload should you use?', options: ['speech recognition', 'text classification', 'generative AI', 'computer vision'], answer: 2, explanation: 'Generative AI models like LLMs are designed to create original, context-aware content like marketing emails.' },
+        { id: 27, type: 'single', question: 'You have a Microsoft Foundry project that has a generative AI model deployment. You need to ensure that responses generated by the model minimize costs and remain within a defined length. Which parameter should you configure?', options: ['Top P', 'Temperature', 'Max Completion Tokens', 'Model version settings'], answer: 2, explanation: 'Max Completion Tokens sets a strict upper bound on output length, controlling costs and response size.' },
+        { id: 28, type: 'single', question: 'You are developing a web app that processes invoices to calculate expenses. You need to extract structured fields, including nested values, from invoices by using a defined schema. What should you use?', options: ['OCR-only document processing', 'transcription workflow in Azure Speech', 'analyzer in Azure Content Understanding', 'Azure AI Search service'], answer: 2, explanation: 'Azure Content Understanding analyzers support schema-driven extraction with nested values from invoices.' },
+        { id: 29, type: 'single', question: 'Which Azure Machine Learning capability should you use to quickly build and deploy a predictive model without extensive coding?', options: ['ML pipelines', 'Copilot', 'DALL-E', 'automated machine learning (automated ML)'], answer: 3, explanation: 'AutoML automates data preparation, feature selection, model training, and hyperparameter tuning.' },
+        { id: 30, type: 'single', question: 'You have a dataset that contains experimental data for fuel samples. You need to predict the amount of energy in kilojoules that can be obtained from a sample based on its measured density. Which type of AI workload should you use?', options: ['Classification', 'Clustering', 'Knowledge mining', 'Regression'], answer: 3, explanation: 'Regression is used to predict continuous values like energy output based on input features.' },
+        { id: 31, type: 'single', question: 'Azure Content Understanding in Foundry Tools can analyze only PDF documents.', options: ['Yes', 'No'], answer: 1, explanation: 'Azure Content Understanding can analyze various content types including images, audio, video, and documents.' },
+        { id: 32, type: 'single', question: 'Azure Content Understanding in Foundry Tools results are returned in JSON format.', options: ['Yes', 'No'], answer: 0, explanation: 'Results are returned as structured JSON for easy integration with applications.' },
+        { id: 33, type: 'single', question: 'Azure Content Understanding in Foundry Tools can extract structured fields from documents and forms by using optical character recognition (OCR) to read text.', options: ['Yes', 'No'], answer: 0, explanation: 'Azure Content Understanding uses OCR as part of its document analysis capabilities.' },
+        { id: 34, type: 'single', question: 'In Microsoft Foundry Agent Service, setting tool_choice to auto for an agent enables the agent to decide whether to call a tool.', options: ['Yes', 'No'], answer: 0, explanation: 'With tool_choice="auto", the agent/model decides whether to call a tool based on the input.' },
+        { id: 35, type: 'single', question: 'In Microsoft Foundry Agent Service, setting tool_choice to none for an agent means that the model decides whether to call a tool.', options: ['Yes', 'No'], answer: 1, explanation: 'tool_choice="none" means the model will NOT call any tools, regardless of input.' },
+        { id: 36, type: 'single', question: 'In Microsoft Foundry Agent Service, setting tool_choice to required for an agent ensures that the agent must call one or more tools during each run.', options: ['Yes', 'No'], answer: 0, explanation: 'tool_choice="required" forces the agent to call at least one tool in every run.' },
+        { id: 37, type: 'single', question: 'What are two common use cases for generative AI solutions? (Select two)', options: ['classifying email messages as spam or non-spam', 'generating draft responses for customer service agents', 'predicting sales revenue based on historical data', 'creating original artwork from textual descriptions'], answer: [1, 3], explanation: 'Generative AI excels at creating new content like draft responses and artwork, not classification or prediction tasks.' },
+        { id: 38, type: 'single', question: 'You have an Azure Machine Learning model that generates a large quantity of false negatives. You need to reduce the number of false negatives without re-training the model. What should you do?', options: ['Use a different Machine Learning model', 'Increase the amount of training data', 'Adjust the threshold value', 'Increase the number of training iterations'], answer: 2, explanation: 'Adjusting the decision threshold can reduce false negatives without retraining, though it may increase false positives.' },
+        { id: 39, type: 'single', question: 'Which Azure OpenAI model can be used to develop code?', options: ['microsoft-swinv2-base-patch4-window12-192-22k', 'Whisper', 'DALL-E', 'GPT-4-32k'], answer: 3, explanation: 'GPT-4 models have strong coding capabilities and can be used for code generation and development.' },
+        { id: 40, type: 'single', question: 'You have a Microsoft Foundry project that contains a vision-enabled model deployment. You need to develop an application that sends a message containing text and an image URL. The solution must ensure the quickest response time. Which message structure should you include in the request?', options: ['system message with both text and image in content array', 'system message with only text and separate image request', 'user message with only text and separate image request', 'user message with both text and image in content array'], answer: 3, explanation: 'Sending both text and image in a single user message minimizes latency and network overhead.' },
+        { id: 41, type: 'single', question: 'An AI workload that produces new content based on user input is an example of:', options: ['generative AI', 'computer vision', 'natural language processing', 'speech recognition'], answer: 0, explanation: 'Generative AI creates new content (text, images, audio) based on user prompts.' },
+        { id: 42, type: 'single', question: 'To define an agent\'s role and behaviors, you must configure a _____ for the agent.', options: ['deployment slot', 'embedding index', 'fine-tuning job', 'system prompt'], answer: 3, explanation: 'System prompts (instructions) define the agent\'s role, behavior, tone, and constraints.' },
+        { id: 43, type: 'single', question: 'Information extraction solutions that detect and read text in scanned documents and images rely on:', options: ['optical character recognition (OCR)', 'natural language processing', 'computer vision', 'speech recognition'], answer: 0, explanation: 'OCR is the foundational technology for extracting text from scanned documents and images.' },
+        { id: 44, type: 'single', question: 'What is the maximum image size that can be processed by using the prebuilt receipt model in Azure AI Document Intelligence?', options: ['5 MB', '10 MB', '50 MB', '100 MB'], answer: 2, explanation: 'Document Intelligence supports file sizes up to 50 MB for prebuilt models.' },
+        { id: 45, type: 'single', question: 'Stating the source of the data used to train a model is an example of which responsible AI principle?', options: ['transparency', 'privacy and security', 'fairness', 'reliability and safety'], answer: 0, explanation: 'Transparency means openly sharing information about how AI systems are designed, trained, and operate.' },
+        { id: 46, type: 'single', question: 'Your company processes customer support emails. You need to implement an AI solution that automatically identifies mentions of people, organizations, and locations in the emails. Which text analysis technique should you use?', options: ['Named Entity Recognition (NER)', 'key phrase extraction', 'sentiment analysis', 'summarization'], answer: 0, explanation: 'NER identifies and categorizes entities like people, organizations, and locations in text.' },
+        { id: 47, type: 'single', question: 'You need to create an AI agent in Microsoft Foundry that follows a specific role and behavior when responding to users. What should you configure?', options: ['system instructions', 'temperature', 'tokens per minute (TPM)', 'max completion tokens'], answer: 0, explanation: 'System instructions (system prompts) define the role, behavior, tone, and constraints of an AI agent.' },
+        { id: 48, type: 'single', question: 'You are developing an application that extracts fields from PDFs by using Azure Content Understanding. You need to use the Python SDK to submit a PDF for analysis and retrieve the extraction results. What should you do?', options: ['Call analyze() to return fields synchronously', 'Submit PDF and read results from request headers', 'Call begin_analyze(), then poller.result()', 'Use OCR to extract text and map fields in code'], answer: 2, explanation: 'Azure Content Understanding uses long-running operations. You call begin_analyze() and poll for results with poller.result().' },
+        { id: 49, type: 'single', question: 'You have a Microsoft Foundry project that contains a vision-enabled chat model deployment. You are developing a Python application that sends a request containing a user prompt and a local JPEG image. You need to include the image as binary data in the request. To what should you set the image_url.url field?', options: ['data:image/jpeg;base64,<binary_image_data>', 'file:///C:/images/photo.jpg', 'C:\\images\\photo.jpg', 'https://<storage-account>.blob.core.windows.net/...'], answer: 0, explanation: 'Binary image data must be sent as a Base64-encoded Data URI string.' },
+        { id: 50, type: 'single', question: 'The Microsoft responsible AI principle of transparency requires that AI systems:', options: ['be explainable to users', 'protect sensitive user data', 'reduce bias in decisions', 'require human oversight'], answer: 0, explanation: 'Transparency requires that AI systems be explainable and understandable to users.' },
+        { id: 51, type: 'single', question: 'Which type of compute resource should you use to attach an existing Azure Kubernetes Service (AKS) cluster to Azure Machine Learning?', options: ['compute cluster', 'serverless compute', 'inference cluster', 'compute instance'], answer: 3, explanation: 'You can attach existing AKS clusters as Kubernetes compute targets for Azure Machine Learning.' },
+        { id: 52, type: 'single', question: 'The Temperature parameter can be set before deploying a model.', options: ['Yes', 'No'], answer: 0, explanation: 'Temperature is a parameter that can be configured in the deployment settings.' },
+        { id: 53, type: 'single', question: 'During inference, the model name is used to route requests to a specific deployment.', options: ['Yes', 'No'], answer: 0, explanation: 'The model name/deployment name routes inference requests to the correct deployed model instance.' },
+        { id: 54, type: 'single', question: 'After a model is deployed, both code and testing tools can be used to interact with the model.', options: ['Yes', 'No'], answer: 0, explanation: 'Deployed models can be accessed via APIs (code) and through testing interfaces like playgrounds.' },
+        { id: 55, type: 'single', question: 'You are using the Azure Speech SDK to develop a Python application that supports real-time spoken conversations. Which Azure Speech class should you use to configure the connection to the Azure Speech service?', options: ['AudioOutputConfig', 'SpeechSynthesizer', 'AudioConfig', 'SpeechConfig'], answer: 3, explanation: 'SpeechConfig holds authentication and endpoint details for connecting to the Azure Speech service.' },
+        { id: 56, type: 'single', question: 'You have a Microsoft Foundry project that contains a model deployment. You need to provision a resource to extract structured data from invoices using Azure Content Understanding. What should you provision?', options: ['Microsoft Foundry project', 'Azure OpenAI resource', 'Microsoft Foundry resource', 'Azure AI Search service'], answer: 2, explanation: 'A Microsoft Foundry resource (Azure AI services resource) is required for Azure Content Understanding.' },
+        { id: 57, type: 'single', question: 'You plan to develop an AI application that will read the license plates of motor vehicles by using Azure AI Foundry. What should you use to develop the application?', options: ['Microsoft Visual Studio Code', 'GitHub Actions', 'Copilot for Microsoft 365', 'Azure AI Studio (Foundry)'], answer: 3, explanation: 'Azure AI Foundry (formerly Azure AI Studio) is the platform for building and managing AI applications.' },
+        { id: 58, type: 'single', question: 'Evaluating model outcomes across demographic groups to reduce bias is an example of the Microsoft responsible AI principle of:', options: ['accountability', 'fairness', 'privacy and security', 'transparency'], answer: 1, explanation: 'Fairness involves evaluating and reducing bias across demographic groups.' },
+        { id: 59, type: 'single', question: 'Which Azure AI Foundry Service can be used to identify documents that contain sensitive information?', options: ['Azure AI Document Intelligence', 'Azure AI Custom Vision', 'Azure AI Language'], answer: 2, explanation: 'Azure AI Language\'s PII detection feature identifies sensitive information like names, addresses, and financial details.' },
+        { id: 60, type: 'single', question: 'Voice Live returns only transcribed text.', options: ['Yes', 'No'], answer: 1, explanation: 'Voice Live combines speech-to-text, reasoning, and text-to-speech into a single conversational experience.' },
+        { id: 61, type: 'single', question: 'Voice Live requires you to separately implement speech to text and text to speech services.', options: ['Yes', 'No'], answer: 1, explanation: 'Voice Live combines these capabilities into one service.' },
+        { id: 62, type: 'single', question: 'Voice Live combines speech to text, reasoning, and text to speech into a single conversational experience.', options: ['Yes', 'No'], answer: 0, explanation: 'Voice Live provides an end-to-end conversational AI experience with all three capabilities.' },
+        { id: 63, type: 'single', question: 'You need to convert written customer notifications into natural-sounding spoken audio that can be played over a phone system. Which Azure Speech capability should you use?', options: ['speech recognition', 'speech synthesis', 'speaker recognition', 'speech translation'], answer: 1, explanation: 'Speech synthesis (Text-to-Speech) converts written text into natural-sounding audio.' },
+        { id: 64, type: 'single', question: 'When using the OpenAI Responses API and a vision-enabled model, you can include an image in a request by providing the image as:', options: ['base64-encoded image data', 'CSV file attachment', 'MP4 video stream', 'shared access signature (SAS) token'], answer: 0, explanation: 'Images can be provided as Base64-encoded data or as a publicly accessible URL.' },
+        { id: 65, type: 'single', question: 'You are developing an application that processes voicemail recordings by using Azure Content Understanding. Which feature does Azure Content Understanding use to convert audio to text?', options: ['key phrase extraction', 'transcription', 'Voice Live', 'optical character recognition (OCR)'], answer: 1, explanation: 'Transcription uses Speech-to-Text to convert audio content into text.' },
+        { id: 66, type: 'single', question: 'You plan to create an AI application by using Azure AI Foundry. The solution will be deployed to dedicated virtual machines. Which deployment option should you use?', options: ['Azure virtual machines', 'Azure Kubernetes Service (AKS) cluster', 'managed compute', 'serverless API'], answer: 3, explanation: 'Serverless API endpoints provide dedicated endpoints accessible via API with pay-as-you-go billing.' },
+        { id: 67, type: 'single', question: 'Which natural language processing feature can be used to identify the main talking points in customer feedback surveys?', options: ['language detection', 'translation', 'entity recognition', 'key phrase extraction'], answer: 3, explanation: 'Key phrase extraction identifies the most relevant and important phrases, highlighting core topics.' },
+        { id: 68, type: 'single', question: 'In the Foundry playground, you can upload a local image and include text in the same message when prompting a multimodal model.', options: ['Yes', 'No'], answer: 0, explanation: 'The Foundry playground supports multimodal inputs with both text and images.' },
+        { id: 69, type: 'single', question: 'When using the OpenAI Responses API and a vision-enabled model, images can be provided only as base64-encoded image data.', options: ['Yes', 'No'], answer: 1, explanation: 'Images can be provided either as Base64-encoded data OR as publicly accessible URLs.' },
+        { id: 70, type: 'single', question: 'Prompts that include images require deploying a text-only model because multimodal capabilities are handled by the application layer.', options: ['Yes', 'No'], answer: 1, explanation: 'Multimodal models handle both text and image inputs directly.' },
+        { id: 71, type: 'single', question: 'You need to compare the costs of large language models (LLMs) for a generative AI solution. What should you use in the Microsoft Foundry portal?', options: ['Compliance', 'Evaluator catalog', 'Tools', 'Model leaderboard'], answer: 3, explanation: 'The Model leaderboard allows side-by-side comparison of models for costs, capabilities, and performance.' },
+        { id: 72, type: 'single', question: 'You are developing a voice application that listens for spoken commands and converts them into text. Which method should you call on the SpeechRecognizer?', options: ['recognize_once()', 'speak_text_async("Ready")', 'start_continuous_recognition()', 'start_keyword_recognition()'], answer: 0, explanation: 'recognize_once() performs single-shot speech recognition for voice commands.' },
+        { id: 73, type: 'single', question: 'What should you use to identify similar faces in a set of images?', options: ['Azure AI Vision', 'Azure AI Custom Vision', 'Azure AI Language', 'Azure OpenAI Service'], answer: 0, explanation: 'Azure AI Vision (Face service) provides face detection, recognition, and similarity grouping.' },
+        { id: 74, type: 'single', question: 'Which functionality in Azure AI Foundry enables you to test prompts for generative AI models?', options: ['evaluation', 'tracing', 'prompt flow', 'playgrounds'], answer: 3, explanation: 'Playgrounds are interactive web-based interfaces for testing and prototyping prompts.' },
+        { id: 75, type: 'single', question: 'You plan to create an AI application that will use Azure OpenAI Service. The solution requires that a specific amount of throughput be allocated. Which type of deployment should you use?', options: ['global batch', 'provisioned', 'data zone standard', 'standard'], answer: 1, explanation: 'Provisioned Throughput Units (PTUs) reserve a fixed amount of processing capacity.' },
+        { id: 76, type: 'single', question: 'You need to create an AI agent in Microsoft Foundry that follows a specific role and behavior when responding to users. What should you configure?', options: ['system instructions', 'temperature', 'tokens per minute (TPM)', 'max completion tokens'], answer: 0, explanation: 'System instructions define the agent\'s role, behavior, tone, and constraints.' },
+        { id: 77, type: 'single', question: 'You need to build an AI solution that produces new product images based on written descriptions provided by users. Which AI workload should you use?', options: ['image analysis', 'image generation', 'object detection', 'optical character recognition (OCR)'], answer: 1, explanation: 'Image generation creates new visual content from text descriptions using generative AI.' },
+        { id: 78, type: 'single', question: 'You deploy the Azure OpenAI service to generate images. You need to ensure that the service provides the highest level of protection against harmful content. What should you do?', options: ['Configure the Content filters settings', 'Customize a large language model (LLM)', 'Configure the system prompt', 'Change the model used by Azure OpenAI'], answer: 0, explanation: 'Content filters detect and prevent harmful content in prompts and completions.' },
+        { id: 79, type: 'single', question: 'You are developing an AI-powered customer support application. Which task is an example of the Microsoft responsible AI principle of inclusiveness?', options: ['Encrypt stored customer data and restrict access', 'Evaluate model outputs across demographic groups to reduce bias', 'Design the interface to support multiple languages and screen readers', 'Provide explanations about how predictions are generated'], answer: 2, explanation: 'Inclusiveness means designing AI systems that empower everyone, including support for accessibility and multiple languages.' },
+        { id: 80, type: 'single', question: 'You have an Azure subscription that uses Azure OpenAI. You need to create an original image of a rural scene to use on a website. What should you do?', options: ['From GitHub Copilot, provide instructions', 'From Azure AI Foundry, deploy GPT-3.5 Turbo', 'From Azure AI Foundry, deploy a DALL-E model', 'From Microsoft Bing, search and download'], answer: 2, explanation: 'DALL-E models are specifically designed for image generation from text prompts.' },
+        { id: 81, type: 'single', question: 'System prompts can be used to authorize users.', options: ['Yes', 'No'], answer: 1, explanation: 'System prompts guide model behavior but do not handle user authorization.' },
+        { id: 82, type: 'single', question: 'A system prompt is used to reduce tokens per minute (TPM).', options: ['Yes', 'No'], answer: 1, explanation: 'System prompts define behavior, not TPM allocation.' },
+        { id: 83, type: 'single', question: 'A system prompt guides the behavior of a generative AI model.', options: ['Yes', 'No'], answer: 0, explanation: 'System prompts are the primary way to guide model behavior and define constraints.' },
+        { id: 84, type: 'single', question: 'Generating a response to a user prompt occurs during the inference stage.', options: ['Yes', 'No'], answer: 0, explanation: 'Inference is the phase where the model generates responses to user prompts.' },
+        { id: 85, type: 'single', question: 'A generative AI model generates responses by copying stored documents directly from the model\'s training data.', options: ['Yes', 'No'], answer: 1, explanation: 'Generative AI models produce new content by predicting patterns, not by copying training data.' },
+        { id: 86, type: 'single', question: 'A generative AI model produces output by predicting the next token based on patterns learned from the model\'s training data.', options: ['Yes', 'No'], answer: 0, explanation: 'This is the core mechanism of how generative AI models work.' },
+        { id: 87, type: 'single', question: 'What is the first step of a generative AI workflow?', options: ['Deploy a generative AI model', 'Fine-tune a model using feedback', 'Train a generative AI model using data', 'Generate outputs based on user prompts'], answer: 2, explanation: 'Training a model using data is the foundational first step in the generative AI workflow.' },
+        { id: 88, type: 'single', question: 'You have a Microsoft Foundry project that contains a vision-enabled model deployment. You use the Azure OpenAI Responses API to send a prompt to the model. You need to provide an image for analysis. Which content item should you include in the request?', options: ['image_base64', 'image_generation', 'output_image', 'input_image'], answer: 3, explanation: 'The Responses API supports image inputs using a structured content item of type "input_image", e.g. {"type": "input_image", "image_url": image_url}.' },
+        { id: 89, type: 'single', question: 'You have a Microsoft Foundry project that contains a generative AI model deployment. You test the model by using the Foundry playground. You need to develop an application that sends requests to the deployed model. Which information must the application include to call the model?', options: ['The model training dataset', 'The Foundry project display name', 'The exported playground session history', 'The model endpoint and authentication credentials'], answer: 3, explanation: 'To call a deployed model from an application, you need the service endpoint plus authentication (an API key or Microsoft Entra ID credentials).' },
+        { id: 90, type: 'single', question: 'You plan to create an AI application that will read the license plates of motor vehicles by using Azure AI Foundry. The solution will be billed via tokens for inputs and outputs to the API. Which deployment option should you use?', options: ['Azure Kubernetes Service (AKS) cluster', 'Azure virtual machines', 'serverless API', 'managed compute'], answer: 2, explanation: 'Serverless API endpoints in Azure AI Foundry use pay-as-you-go, token-based billing for inputs and outputs.' },
+        { id: 91, type: 'single', question: 'Your company has thousands of recorded customer support calls in multiple languages stored as audio files in Azure Storage. You need to generate text transcripts of all the recordings. Which Azure Speech in Foundry Tools capability should you use?', options: ['speech to text batch transcription', 'speech to text real-time transcription', 'text to speech', 'speech translation'], answer: 0, explanation: 'Batch transcription is designed to transcribe large amounts of stored audio, such as files in Azure Blob Storage, and can process many files concurrently.' },
+        { id: 92, type: 'single', question: 'What is an example of a Microsoft responsible AI principle?', options: ['AI systems should NOT reveal the details of their design', 'AI systems should protect the interests of developers', 'AI systems should treat people fairly', 'AI systems should use black-box models'], answer: 2, explanation: 'Fairness — AI systems should treat all people fairly — is one of the core Microsoft responsible AI principles.' },
+        { id: 93, type: 'single', question: 'What should you use to explore pretrained generative AI models available from Microsoft and third-party providers?', options: ['Azure Machine Learning designer', 'Azure Synapse Analytics', 'Azure AI Foundry', 'Language Studio'], answer: 2, explanation: 'Azure AI Foundry (Foundry Models) gives access to a catalog of flagship pretrained models from Microsoft and third-party providers for flexible deployment.' },
+        { id: 94, type: 'single', question: 'You have a Microsoft Foundry project that contains a vision-enabled model deployment. You are developing an application that sends images to the model. You need to ensure that the model can analyze the images. In which two formats can you provide the images? (Select two)', options: ['a JSON document that describes the image content', 'a UTF-8 encoded text description of the image', 'a publicly accessible URL of the image', 'a base64 encoded image data string'], answer: [2, 3], explanation: 'Vision-enabled model requests accept image input either as a publicly accessible URL or as base64-encoded image data.' },
+        { id: 95, type: 'single', question: 'You are building a knowledge base by using Azure AI Language service\'s custom answering feature. Which file format can you use to populate the knowledge base?', options: ['PPTX', 'PDF', 'JPEG', 'ZIP'], answer: 1, explanation: 'Custom answering can populate its knowledge base from structured text, Office documents (.docx/.xlsx/.pptx), HTML, Markdown, and PDF files.' }
+    ];
+
+    // ============================================================
+    //  APP STATE
+    // ============================================================
+    let questions = [];
+    let userAnswers = {};
+    let results = {};
+    let submitted = false;
+    let filter = 'all';
+    let currentMode = 'full'; // 'full' | '25' | '10'
+
+    // ============================================================
+    //  HELPERS
+    // ============================================================
+    function shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function deepClone(obj) {
+        return JSON.parse(JSON.stringify(obj));
+    }
+
+    function buildQuestionCopy(q) {
+        const copy = deepClone(q);
+        const optionCount = copy.options.length;
+        const indices = Array.from({ length: optionCount }, (_, i) => i);
+        const shuffledIndices = shuffleArray([...indices]);
+
+        const oldAnswer = copy.answer;
+        const isArray = Array.isArray(oldAnswer);
+        const oldAnswerArr = isArray ? oldAnswer : [oldAnswer];
+        const newAnswerArr = oldAnswerArr.map(oldIdx => shuffledIndices.indexOf(oldIdx));
+
+        const newOptions = shuffledIndices.map(idx => copy.options[idx]);
+        copy.options = newOptions;
+        copy.answer = isArray ? newAnswerArr : newAnswerArr[0];
+        copy._originalOptions = q.options;
+        copy._originalAnswer = q.answer;
+        copy._shuffledMap = shuffledIndices;
+
+        return copy;
+    }
+
+    function initQuestions() {
+        let pool;
+        if (currentMode === '25' || currentMode === '10') {
+            const count = parseInt(currentMode, 10);
+            const shuffledPool = shuffleArray([...EXAM_DATA]);
+            pool = shuffledPool.slice(0, count).sort((a, b) => a.id - b.id);
+        } else {
+            pool = [...EXAM_DATA].sort((a, b) => a.id - b.id);
+        }
+        questions = pool.map(q => buildQuestionCopy(q));
+        userAnswers = {};
+        results = {};
+        submitted = false;
+        refreshModeLabels();
+    }
+
+    function refreshModeLabels() {
+        const total = questions.length;
+        document.getElementById('totalQ').textContent = total;
+
+        const modeSub = document.getElementById('modeSub');
+        if (currentMode === 'full') {
+            modeSub.textContent = `${total}-question self-paced exam · answers shuffle per attempt`;
+        } else {
+            modeSub.textContent = `${total} random questions · a fresh set is drawn each time you switch or reshuffle`;
+        }
+
+        document.querySelectorAll('.mode-bar .mode-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.mode === currentMode);
+        });
+
+        const reshuffleLabel = currentMode === 'full'
+            ? 'Reshuffle Options'
+            : 'New Random Set';
+        document.getElementById('reshuffleBtn').textContent = reshuffleLabel;
+    }
+
+    function getCorrectAnswerText(q) {
+        const ans = q.answer;
+        if (Array.isArray(ans)) {
+            return ans.map(idx => q.options[idx]).join(', ');
+        }
+        return q.options[ans] || 'N/A';
+    }
+
+    function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+
+    // ============================================================
+    //  RENDER
+    // ============================================================
+    function render() {
+        const container = document.getElementById('questionsContainer');
+        const qs = getFilteredQuestions();
+
+        if (qs.length === 0) {
+            container.innerHTML = `<p style="text-align:center; padding:40px; color:var(--text-faint); font-family:var(--font-mono); font-size:13px;">No questions match this filter.</p>`;
+        } else {
+            let html = '';
+            qs.forEach((q) => {
+                const qId = q.id;
+                const answered = userAnswers[qId] !== undefined;
+                const isCorrect = results[qId] === 'correct';
+                const isWrong = results[qId] === 'wrong';
+                const statusClass = isCorrect ? 'correct' : (isWrong ? 'wrong' : '');
+
+                html += `<div class="question-card ${statusClass}" data-qid="${qId}">`;
+                html += `<div class="qnum-col">${pad2(qId)}</div>`;
+                html += `<div class="qbody">`;
+                html += `<div class="question-text">${q.question}</div>`;
+                html += `<div class="options">`;
+
+                const isMulti = Array.isArray(q.answer);
+                const inputType = isMulti ? 'checkbox' : 'radio';
+                const inputName = `q${qId}`;
+                const selected = userAnswers[qId] ?? [];
+
+                q.options.forEach((opt, optIdx) => {
+                    const checked = isMulti ?
+                        (Array.isArray(selected) && selected.includes(optIdx)) :
+                        (selected === optIdx);
+                    const disabled = submitted ? 'disabled' : '';
+
+                    const isCorrectOption = isMulti ?
+                        q.answer.includes(optIdx) :
+                        q.answer === optIdx;
+
+                    const isUserSelected = isMulti ?
+                        (Array.isArray(selected) && selected.includes(optIdx)) :
+                        (selected === optIdx);
+
+                    let labelClass = '';
+                    if (submitted && isCorrectOption) {
+                        labelClass = 'correct-answer';
+                    }
+                    if (submitted && isWrong && isUserSelected && !isCorrectOption) {
+                        labelClass = 'wrong-answer';
+                    }
+
+                    html += `<label class="${labelClass}">`;
+                    html += `<input type="${inputType}" name="${inputName}" value="${optIdx}" ${checked ? 'checked' : ''} ${disabled} data-qid="${qId}" data-optidx="${optIdx}">`;
+                    html += `<span>${opt}</span>`;
+                    if (submitted && isCorrectOption) html += ` ✓`;
+                    if (submitted && isWrong && isUserSelected && !isCorrectOption) html += ` ✕`;
+                    html += `</label>`;
+                });
+
+                html += `</div>`;
+
+                if (submitted) {
+                    const isCorrectResult = results[qId] === 'correct';
+                    const isWrongResult = results[qId] === 'wrong';
+                    let badge = '';
+                    if (isCorrectResult) {
+                        badge = '<span class="badge badge-correct">Correct</span>';
+                    } else if (isWrongResult) {
+                        badge = '<span class="badge badge-wrong">Wrong</span>';
+                    } else {
+                        badge = '<span class="badge badge-unanswered">Unanswered</span>';
+                    }
+
+                    let correctAnswerDisplay = '';
+                    if (isWrongResult) {
+                        correctAnswerDisplay = `<div class="correct-answer-text">Correct answer: ${getCorrectAnswerText(q)}</div>`;
+                    }
+
+                    html += `<div class="explanation" style="display:block;">`;
+                    html += `${badge}<br style="margin-bottom:4px;">`;
+                    if (correctAnswerDisplay) html += correctAnswerDisplay;
+                    html += `<div style="margin-top:8px;">${q.explanation || 'No explanation available.'}</div>`;
+                    html += `</div>`;
+                }
+
+                html += `</div>`; // qbody
+                html += `</div>`; // question-card
+            });
+            container.innerHTML = html;
+        }
+
+        updateStats();
+        updateFilterButtons();
+    }
+
+    function getFilteredQuestions() {
+        if (filter === 'all') return questions;
+        if (filter === 'unanswered') return questions.filter(q => userAnswers[q.id] === undefined);
+        if (filter === 'correct') return questions.filter(q => results[q.id] === 'correct');
+        if (filter === 'wrong') return questions.filter(q => results[q.id] === 'wrong');
+        return questions;
+    }
+
+    function updateStats() {
+        const total = questions.length;
+        let answered = 0, correct = 0, wrong = 0;
+        questions.forEach(q => {
+            if (userAnswers[q.id] !== undefined) answered++;
+            if (results[q.id] === 'correct') correct++;
+            if (results[q.id] === 'wrong') wrong++;
+        });
+        document.getElementById('answeredCount').textContent = answered;
+        document.getElementById('correctCount').textContent = correct;
+        document.getElementById('wrongCount').textContent = wrong;
+        const score = answered > 0 ? Math.round((correct / answered) * 100) : 0;
+        document.getElementById('scoreDisplay').textContent = score + '%';
+        document.getElementById('progressText').textContent = `${answered} of ${total} answered`;
+
+        // update gauge
+        const gauge = document.getElementById('gauge');
+        const gaugeValue = document.getElementById('gaugeValue');
+        const deg = Math.round((score / 100) * 360);
+        const gaugeColor = submitted ? (score >= 70 ? 'var(--success)' : score >= 40 ? 'var(--amber)' : 'var(--danger)') : 'var(--azure)';
+        gauge.style.background = `conic-gradient(${gaugeColor} ${deg}deg, var(--border-soft) ${deg}deg)`;
+        gaugeValue.textContent = score + '%';
+
+        if (submitted) {
+            const unanswered = total - answered;
+            document.getElementById('finalScore').textContent = score + '%';
+            document.getElementById('finalCorrect').textContent = correct;
+            document.getElementById('finalWrong').textContent = wrong;
+            document.getElementById('finalUnanswered').textContent = unanswered;
+        }
+    }
+
+    function updateFilterButtons() {
+        document.querySelectorAll('.filter-bar .btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.filter === filter);
+        });
+    }
+
+    // ============================================================
+    //  EVENT BINDING
+    // ============================================================
+    function bindEvents() {
+        document.addEventListener('change', function(e) {
+            if (e.target.matches('.options input[type="radio"], .options input[type="checkbox"]')) {
+                if (submitted) return;
+                const qId = parseInt(e.target.dataset.qid);
+                const isMulti = document.querySelector(`.options input[name="q${qId}"][type="checkbox"]`) !== null;
+
+                if (isMulti) {
+                    const checks = document.querySelectorAll(`.options input[name="q${qId}"]:checked`);
+                    const values = Array.from(checks).map(c => parseInt(c.value));
+                    userAnswers[qId] = values;
+                } else {
+                    userAnswers[qId] = parseInt(e.target.value);
+                }
+                delete results[qId];
+                render();
+            }
+        });
+
+        document.getElementById('submitBtn').addEventListener('click', submitExam);
+        document.getElementById('submitBtn2').addEventListener('click', submitExam);
+
+        document.getElementById('resetBtn').addEventListener('click', resetExam);
+        document.getElementById('resetBtn2').addEventListener('click', resetExam);
+
+        document.getElementById('reshuffleBtn').addEventListener('click', function() {
+            if (submitted) {
+                if (!confirm('Reshuffling will reset your progress. Continue?')) return;
+            }
+            initQuestions();
+            submitted = false;
+            document.getElementById('resultSummary').style.display = 'none';
+            document.getElementById('showAllExplanationsBtn').style.display = 'inline-flex';
+            document.getElementById('hideAllExplanationsBtn').style.display = 'none';
+            render();
+        });
+
+        document.querySelectorAll('.filter-bar .btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                filter = this.dataset.filter;
+                render();
+            });
+        });
+
+        document.querySelectorAll('.mode-bar .mode-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const newMode = this.dataset.mode;
+                if (submitted || Object.keys(userAnswers).length > 0) {
+                    if (!confirm('Switching practice mode will reset your current progress. Continue?')) return;
+                }
+                currentMode = newMode;
+                filter = 'all';
+                initQuestions();
+                document.getElementById('resultSummary').style.display = 'none';
+                document.getElementById('showAllExplanationsBtn').style.display = 'inline-flex';
+                document.getElementById('hideAllExplanationsBtn').style.display = 'none';
+                render();
+            });
+        });
+
+        document.getElementById('showAllExplanationsBtn').addEventListener('click', function() {
+            document.querySelectorAll('.explanation').forEach(el => el.style.display = 'block');
+            this.style.display = 'none';
+            document.getElementById('hideAllExplanationsBtn').style.display = 'inline-flex';
+        });
+
+        document.getElementById('hideAllExplanationsBtn').addEventListener('click', function() {
+            document.querySelectorAll('.explanation').forEach(el => el.style.display = 'none');
+            this.style.display = 'none';
+            document.getElementById('showAllExplanationsBtn').style.display = 'inline-flex';
+        });
+    }
+
+    // ============================================================
+    //  SUBMIT / GRADE
+    // ============================================================
+    function submitExam() {
+        let anyAnswered = false;
+        questions.forEach(q => {
+            if (userAnswers[q.id] !== undefined) anyAnswered = true;
+        });
+
+        if (!anyAnswered) {
+            alert('Please answer at least one question before submitting.');
+            return;
+        }
+
+        questions.forEach(q => {
+            const userAns = userAnswers[q.id];
+            if (userAns === undefined) {
+                results[q.id] = null;
+                return;
+            }
+
+            const correctAns = q.answer;
+            const isMulti = Array.isArray(correctAns);
+
+            if (isMulti) {
+                const userArr = Array.isArray(userAns) ? userAns.slice().sort() : [];
+                const correctArr = correctAns.slice().sort();
+                const match = userArr.length === correctArr.length &&
+                    userArr.every((v, i) => v === correctArr[i]);
+                results[q.id] = match ? 'correct' : 'wrong';
+            } else {
+                results[q.id] = (userAns === correctAns) ? 'correct' : 'wrong';
+            }
+        });
+
+        submitted = true;
+        document.getElementById('resultSummary').style.display = 'flex';
+        render();
+        document.getElementById('resultSummary').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // ============================================================
+    //  RESET
+    // ============================================================
+    function resetExam() {
+        if (submitted) {
+            if (!confirm('Reset will clear all answers and results. Continue?')) return;
+        }
+        userAnswers = {};
+        results = {};
+        submitted = false;
+        document.getElementById('resultSummary').style.display = 'none';
+        document.getElementById('showAllExplanationsBtn').style.display = 'inline-flex';
+        document.getElementById('hideAllExplanationsBtn').style.display = 'none';
+        render();
+    }
+
+    // ============================================================
+    //  INIT
+    // ============================================================
+    initQuestions();
+    render();
+    bindEvents();
+
+    console.log('AI-901 Practice Exam loaded — ' + questions.length + ' questions (mode: ' + currentMode + ')');
+</script>
+
+</body>
+</html>
